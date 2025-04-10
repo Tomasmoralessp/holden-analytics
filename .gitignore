@@ -1,0 +1,40 @@
+# Entorno virtual
+venv/
+ENV/
+env/
+.venv/
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Archivos de logs y outputs
+*.log
+*.out
+
+# Archivos temporales o de sistema
+.DS_Store
+Thumbs.db
+
+# Configs de editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# Datos y modelos
+*.csv
+*.xlsx
+*.joblib
+*.pkl
+
+# Archivos de exportación y builds
+dist/
+build/
+*.egg-info/
