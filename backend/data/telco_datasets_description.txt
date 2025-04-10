@@ -1,0 +1,41 @@
+
+Descripción de los datasets generados en el proyecto Telco Customer Churn
+----------------------------------------------------------------------------
+
+1. telco_model_ready.csv
+-------------------------
+Este dataset está preparado para modelos que NO requieren variables binned ni categóricas originales.
+Contiene:
+- Variables numéricas (`tenure`, `MonthlyCharges`, `TotalCharges`) correctamente convertidas.
+- Variables categóricas transformadas mediante One-Hot Encoding (get_dummies), eliminando la primera categoría para evitar multicolinealidad (`drop_first=True`).
+- La variable objetivo `Churn` codificada como 0 (No) y 1 (Yes).
+- No contiene columnas de ID (`customerID` ha sido eliminada).
+Ideal para: regresión logística, redes neuronales, PCA, SVM, etc.
+
+2. telco_binned_ready.csv
+---------------------------
+Este dataset está preparado para modelos que funcionan bien con variables categóricas o agrupadas por tramos (binning).
+Contiene:
+- Variables numéricas transformadas en categorías agrupadas:
+    - `tenure_group`: grupos de meses.
+    - `monthly_group`: grupos de cargos mensuales.
+    - `total_group`: tramos de cargos totales.
+- Variables categóricas transformadas en variables dummy.
+- La variable objetivo `Churn` codificada como 0 (No) y 1 (Yes).
+- No contiene columnas de ID (`customerID` ha sido eliminada).
+Ideal para: árboles de decisión, XGBoost, Random Forest, LightGBM, etc.
+
+3. telco_pca_ready.csv (opcional, si se exporta)
+------------------------------------------------
+Este dataset contiene los datos transformados tras aplicar PCA sobre `telco_model_ready.csv`.
+Contiene:
+- Componentes principales `PC1`, `PC2`, ..., que resumen la información de las variables originales manteniendo el 95% de la varianza.
+- La variable `Churn` como variable objetivo.
+Ideal para: análisis exploratorio, modelos sensibles a la multicolinealidad, reducción de dimensionalidad en redes neuronales o clustering.
+
+----------------------------------------------------------------------------
+
+Guide-line:
+Usar `telco_model_ready.csv` para modelos donde la escala, varianza o relaciones lineales importan.
+Usar `telco_binned_ready.csv` para modelos basados en árboles que manejan bien variables categóricas y binned.
+Usar `telco_pca_ready.csv` si se desea trabajar en un espacio reducido de características manteniendo la mayor parte de la información.
