@@ -31,7 +31,6 @@ Thumbs.db
 # Datos y modelos
 *.csv
 *.xlsx
-*.joblib
 *.pkl
 
 # Archivos de exportación y builds
