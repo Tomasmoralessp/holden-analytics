@@ -1,10 +1,21 @@
-
-import React, { useRef } from 'react';
-import { Upload, AlertCircle, FileCheck, Loader2 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import CustomButton from '@/components/ui/CustomButton';
-import { AnalysisResult } from '@/types/analysis';
-import { toast } from 'sonner';
+import React, { useRef, useState } from "react";
+import {
+  Upload,
+  AlertCircle,
+  FileCheck,
+  Loader2,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import CustomButton from "@/components/ui/CustomButton";
+import { AnalysisResult } from "@/types/analysis";
+import { toast } from "sonner";
 
 interface UploadSectionProps {
   isLoading: boolean;
@@ -14,7 +25,7 @@ interface UploadSectionProps {
   setResults: (results: AnalysisResult) => void;
   setIsLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
-  onDemoData: () => void;
+  onDemoData: (options?: { cost_fn: number; cost_fp: number }) => void;
   setWasPreprocessed: (value: boolean) => void;
 }
 
@@ -27,107 +38,92 @@ const UploadSection: React.FC<UploadSectionProps> = ({
   setIsLoading,
   setError,
   onDemoData,
-  setWasPreprocessed
+  setWasPreprocessed,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const API_URL = import.meta.env.VITE_API_URL as string;
+
+  const [costFn, setCostFn] = useState<number>(100);
+  const [costFp, setCostFp] = useState<number>(10);
+
+  const triggerFileInput = () => fileInputRef.current?.click();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     setError(null);
-    
+
     if (!file) return;
-    
-    // Validate file type
-    if (!file.name.endsWith('.csv')) {
-      setError('Solo se permiten archivos CSV');
-      setFileName('');
+
+    if (!file.name.endsWith(".csv")) {
+      setError("Solo se permiten archivos CSV");
+      setFileName("");
       return;
     }
-    
+
     setFileName(file.name);
-    
-    // In a real app, you would upload the file here
-    // For now, we'll just simulate it
   };
 
   const handleFileUpload = async () => {
-    if (!fileName) {
-      setError('Por favor, selecciona un archivo CSV');
+    const file = fileInputRef.current?.files?.[0];
+
+    if (!file) {
+      setError("Por favor, selecciona un archivo CSV");
       return;
     }
 
     try {
       setIsLoading(true);
+      setError(null);
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("cost_fn", costFn.toString());
+      formData.append("cost_fp", costFp.toString());
+      formData.append("preprocessed", "false");
+
+      const response = await fetch(`${API_URL}/predict`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error(await response.text());
+
+      const data: AnalysisResult & { was_preprocessed?: boolean } = await response.json();
+
+      setResults({
+        ...data,
+        cost_fn: costFn,
+        cost_fp: costFp,
+        _timestamp: Date.now(), // <-- forzar re-render
+      });
       
-      // Simulating API call
-      // In a real app, you would use axios or fetch to upload the file
-      setTimeout(() => {
-        const mockProcessed = Math.random() > 0.5;
-        setWasPreprocessed(mockProcessed);
-        
-        toast.success(`Archivo analizado correctamente${mockProcessed ? ' (datos preprocesados)' : ''}`);
-        
-        // Mock response data
-        setResults({
-          metrics: {
-            threshold: 0.55,
-            totalCost: 15420,
-            f1: 0.78,
-            recall: 0.81,
-            precision: 0.75
-          },
-          topRiskCustomers: [
-            { id: "C5024", riskScore: 0.98 },
-            { id: "C1819", riskScore: 0.94 },
-            { id: "C3523", riskScore: 0.89 },
-            { id: "C7210", riskScore: 0.87 },
-            { id: "C9421", riskScore: 0.84 },
-            { id: "C2792", riskScore: 0.79 },
-            { id: "C4012", riskScore: 0.76 },
-            { id: "C8156", riskScore: 0.73 },
-            { id: "C1587", riskScore: 0.70 },
-            { id: "C5114", riskScore: 0.68 }
-          ],
-          shapValues: [
-            { feature: "Duración contrato", importance: 0.85, direction: "negative" },
-            { feature: "Meses como cliente", importance: 0.79, direction: "negative" },
-            { feature: "Gasto mensual", importance: 0.68, direction: "positive" },
-            { feature: "Soporte técnico", importance: 0.59, direction: "negative" },
-            { feature: "Método pago", importance: 0.54, direction: "positive" },
-            { feature: "Servicio internet", importance: 0.48, direction: "positive" },
-            { feature: "Edad", importance: 0.40, direction: "negative" },
-            { feature: "Factura en papel", importance: 0.28, direction: "positive" }
-          ],
-          classificationReport: {
-            accuracy: 0.82,
-            class0: { precision: 0.86, recall: 0.90, f1: 0.88 },
-            class1: { precision: 0.74, recall: 0.66, f1: 0.70 }
-          }
-        });
-        
-        setIsLoading(false);
-      }, 2000);
       
-    } catch (err) {
-      setError('Error al procesar el archivo');
+
+      setWasPreprocessed(data.was_preprocessed === true);
+      toast.success("Archivo analizado correctamente");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Error al procesar el archivo";
+      setError(msg);
+      toast.error(msg);
+    } finally {
       setIsLoading(false);
     }
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
   };
 
   return (
     <Card className="shadow-lg border-holden-cyan/20">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-holden-dark">Subir archivo CSV</CardTitle>
+        <CardTitle className="text-2xl font-bold text-holden-dark">
+          Subir archivo CSV
+        </CardTitle>
         <CardDescription>
-          Sube un archivo CSV con los datos de tus clientes para predecir la probabilidad de cancelación
+          Sube un archivo CSV con los datos de tus clientes para predecir la
+          probabilidad de cancelación
         </CardDescription>
       </CardHeader>
+
       <CardContent className="space-y-6">
-        <div 
+        <div
           className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-holden-cyan/70 transition-colors cursor-pointer"
           onClick={triggerFileInput}
         >
@@ -138,7 +134,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({
             ref={fileInputRef}
             onChange={handleFileChange}
           />
-          
+
           <Upload className="mx-auto h-12 w-12 text-gray-400" />
           <p className="mt-2 text-sm text-gray-600">
             Haz clic para seleccionar un archivo o arrastra y suelta aquí
@@ -160,25 +156,47 @@ const UploadSection: React.FC<UploadSectionProps> = ({
             <span className="text-gray-700">{fileName}</span>
           </div>
         )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Coste por Falso Negativo</label>
+            <input
+              type="number"
+              value={costFn}
+              onChange={(e) => setCostFn(Number(e.target.value))}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-holden-cyan"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Coste por Falso Positivo</label>
+            <input
+              type="number"
+              value={costFp}
+              onChange={(e) => setCostFp(Number(e.target.value))}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-holden-cyan"
+            />
+          </div>
+        </div>
       </CardContent>
-      
+
       <CardFooter className="flex flex-col sm:flex-row gap-3">
-        <CustomButton 
-          onClick={handleFileUpload} 
-          disabled={isLoading || !fileName} 
+        <CustomButton
+          onClick={handleFileUpload}
+          disabled={isLoading || !fileName}
           className="w-full sm:w-auto"
         >
           {isLoading ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Procesando...
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Procesando...
             </>
-          ) : 'Analizar Datos'}
+          ) : (
+            "Analizar Datos"
+          )}
         </CustomButton>
-        
-        <CustomButton 
-          variant="outline" 
-          onClick={onDemoData} 
+
+        <CustomButton
+          variant="outline"
+          onClick={() => onDemoData({ cost_fn: costFn, cost_fp: costFp })}
           disabled={isLoading}
           className="w-full sm:w-auto"
         >

@@ -22,6 +22,10 @@ class PredictionResponse(BaseModel):
     f1: float
     recall: float
     precision: float
+    fn: int
+    fp: int
+    tp: int
+    tn: int
     shap_summary: List[ShapFeature]
     top_customers_at_risk: List[RiskScore]
     classification_report: Dict[str, Union[ClassMetrics, float]]

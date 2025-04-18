@@ -1,15 +1,11 @@
-
-import React from 'react';
-import { AnalysisResult } from '@/types/analysis';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import CustomButton from '@/components/ui/CustomButton';
-import { FileCheck, RotateCcw, Copy, ArrowUpDown, Info } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { toast } from 'sonner';
-import MetricsCard from './MetricsCard';
-import ShapChart from './ShapChart';
-import ClassificationTable from './ClassificationTable';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import MetricsCard from "@/components/analysis/MetricsCard";
+import RiskTable from "@/components/analysis/RiskTable";
+import ShapChart from "@/components/analysis/ShapChart";
+import ClassificationTable from "@/components/analysis/ClassificationTable";
+import { AnalysisResult } from "@/types/analysis";
 
 interface ResultsSectionProps {
   results: AnalysisResult;
@@ -18,125 +14,64 @@ interface ResultsSectionProps {
   onReset: () => void;
 }
 
-const ResultsSection: React.FC<ResultsSectionProps> = ({ 
-  results, 
+const ResultsSection: React.FC<ResultsSectionProps> = ({
+  results,
   fileName,
   wasPreprocessed,
-  onReset 
+  onReset,
 }) => {
-  const copyToClipboard = () => {
-    const textToCopy = results.topRiskCustomers
-      .map(customer => `${customer.id}: ${(customer.riskScore * 100).toFixed(1)}%`)
-      .join('\n');
-    
-    navigator.clipboard.writeText(textToCopy);
-    toast.success('Datos copiados al portapapeles');
-  };
+  const {
+    threshold,
+    coste_total,
+    f1,
+    recall,
+    precision,
+    fn,
+    fp,
+    tp,
+    cost_fn,
+    cost_fp,
+    shap_summary,
+    top_customers_at_risk,
+    classification_report,
+  } = results;
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center gap-2">
-          <FileCheck className="text-green-500" size={20} />
-          <span className="font-medium">Archivo analizado:</span>
-          <span className="text-holden-dark">{fileName}</span>
-          
-          {wasPreprocessed && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="inline-flex items-center justify-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 cursor-help">
-                  <Info size={12} className="mr-1" />
-                  Preprocesado
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="w-64 text-xs">
-                  Este dataset ya ha sido preprocesado, incluyendo normalización,
-                  codificación de variables categóricas y manejo de valores faltantes.
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          )}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-holden-dark mb-1">
+            Resultados del Análisis
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Archivo: {fileName} | {wasPreprocessed ? "Datos preprocesados" : "Datos crudos"}
+          </p>
         </div>
-        
-        <CustomButton variant="outline" onClick={onReset} className="flex items-center gap-2">
-          <RotateCcw size={16} />
-          Reiniciar análisis
-        </CustomButton>
+        <Button variant="ghost" onClick={onReset} className="text-holden-dark">
+          <ArrowLeft className="mr-2 h-4 w-4" /> Volver
+        </Button>
       </div>
-      
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-        {/* Métricas generales */}
-        <MetricsCard metrics={results.metrics} />
-        
-        {/* Top clientes en riesgo */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-lg font-medium">Top clientes en riesgo</CardTitle>
-            <CustomButton 
-              variant="ghost" 
-              size="sm" 
-              onClick={copyToClipboard}
-              className="h-8 px-2"
-            >
-              <Copy size={16} className="mr-1" />
-              Copiar
-            </CustomButton>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID Cliente</TableHead>
-                  <TableHead className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      Riesgo de cancelación
-                      <ArrowUpDown size={14} />
-                    </div>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {results.topRiskCustomers.map((customer) => (
-                  <TableRow key={customer.id}>
-                    <TableCell className="font-medium">{customer.id}</TableCell>
-                    <TableCell className="text-right">
-                      <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        customer.riskScore > 0.8 
-                          ? 'bg-red-100 text-red-800' 
-                          : customer.riskScore > 0.7 
-                            ? 'bg-orange-100 text-orange-800' 
-                            : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {(customer.riskScore * 100).toFixed(1)}%
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-        
-        {/* SHAP Global */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">Importancia global de variables (SHAP)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ShapChart shapValues={results.shapValues} />
-          </CardContent>
-        </Card>
-        
-        {/* Classification Report */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">Reporte de clasificación</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ClassificationTable report={results.classificationReport} />
-          </CardContent>
-        </Card>
+
+      <div className="space-y-12">
+        <MetricsCard
+          metrics={{
+            threshold,
+            f1,
+            recall,
+            precision,
+            fn,
+            fp,
+            tp,
+            cost_fn,
+            cost_fp,
+          }}
+        />
+
+        <ShapChart shapValues={shap_summary} />
+
+        <RiskTable customers={top_customers_at_risk} />
+
+        <ClassificationTable report={classification_report} />
       </div>
     </div>
   );

@@ -1,40 +1,41 @@
+// src/types/analysis.ts
 
-export interface AnalysisMetrics {
-  threshold: number;
-  totalCost: number;
-  f1: number;
-  recall: number;
-  precision: number;
+export interface ShapSummaryItem {
+  feature: string;
+  importance: number;
+  direction: number;
 }
 
 export interface RiskCustomer {
-  id: string;
-  riskScore: number;
+  id: string | number;
+  risk_score: number;
 }
 
-export interface ShapValue {
-  feature: string;
-  importance: number;
-  direction: 'positive' | 'negative';
+export interface ClassificationMetrics {
+  precision: number;
+  recall: number;
+  f1_score: number;
+  support: number;
 }
 
-export interface ClassReport {
-  accuracy: number;
-  class0: {
-    precision: number;
-    recall: number;
-    f1: number;
-  };
-  class1: {
-    precision: number;
-    recall: number;
-    f1: number;
-  };
+export interface ClassificationReport {
+  [key: string]: ClassificationMetrics | number; // "0", "1", "macro avg", "accuracy" (como number), etc.
 }
 
 export interface AnalysisResult {
-  metrics: AnalysisMetrics;
-  topRiskCustomers: RiskCustomer[];
-  shapValues: ShapValue[];
-  classificationReport: ClassReport;
+  threshold: number;
+  coste_total: number;
+  f1: number;
+  recall: number;
+  precision: number;
+  fn: number;
+  fp: number;
+  tp: number;
+  tn: number;
+  shap_summary: ShapSummaryItem[];
+  top_customers_at_risk: RiskCustomer[];
+  classification_report: ClassificationReport;
+  cost_fn: number; // Añadir para reflejar valores recibidos
+  cost_fp: number;
 }
+

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -22,45 +21,34 @@ const Analysis: React.FC = () => {
   const handleDemoData = async () => {
     setIsLoading(true);
     setError(null);
-    
-    // Simulating API call with demo data
+
     setTimeout(() => {
-      setResults({
-        metrics: {
-          threshold: 0.5,
-          totalCost: 12580,
-          f1: 0.82,
-          recall: 0.79,
-          precision: 0.85
-        },
-        topRiskCustomers: [
-          { id: "C1024", riskScore: 0.95 },
-          { id: "C3819", riskScore: 0.92 },
-          { id: "C5523", riskScore: 0.88 },
-          { id: "C2210", riskScore: 0.85 },
-          { id: "C4421", riskScore: 0.82 },
-          { id: "C7792", riskScore: 0.78 },
-          { id: "C3012", riskScore: 0.75 },
-          { id: "C9156", riskScore: 0.72 },
-          { id: "C2587", riskScore: 0.69 },
-          { id: "C6114", riskScore: 0.66 }
+      const demoResults = {
+        threshold: 0.5,
+        coste_total: 12580,
+        f1: 0.82,
+        recall: 0.79,
+        precision: 0.85,
+        top_customers_at_risk: [
+          { id: "C1024", risk_score: 0.95 },
+          { id: "C3819", risk_score: 0.92 },
+          { id: "C5523", risk_score: 0.88 },
+          { id: "C2210", risk_score: 0.85 },
+          { id: "C4421", risk_score: 0.82 }
         ],
-        shapValues: [
-          { feature: "Duración contrato", importance: 0.82, direction: "negative" },
-          { feature: "Meses como cliente", importance: 0.76, direction: "negative" },
-          { feature: "Gasto mensual", importance: 0.65, direction: "positive" },
-          { feature: "Soporte técnico", importance: 0.58, direction: "negative" },
-          { feature: "Método pago", importance: 0.52, direction: "positive" },
-          { feature: "Servicio internet", importance: 0.45, direction: "positive" },
-          { feature: "Edad", importance: 0.38, direction: "negative" },
-          { feature: "Factura en papel", importance: 0.25, direction: "positive" }
+        shap_summary: [
+          { feature: "Duración contrato", importance: 0.82, direction: -0.45 },
+          { feature: "Meses como cliente", importance: 0.76, direction: -0.32 },
+          { feature: "Gasto mensual", importance: 0.65, direction: 0.28 }
         ],
-        classificationReport: {
+        classification_report: {
           accuracy: 0.84,
-          class0: { precision: 0.88, recall: 0.92, f1: 0.90 },
-          class1: { precision: 0.76, recall: 0.68, f1: 0.72 }
+          "0": { precision: 0.88, recall: 0.92, f1_score: 0.90, support: 400 },
+          "1": { precision: 0.76, recall: 0.68, f1_score: 0.72, support: 150 }
         }
-      });
+      };
+
+      setResults(demoResults);
       setWasPreprocessed(true);
       setFileName('datos_demo.csv');
       setIsLoading(false);
@@ -70,11 +58,10 @@ const Analysis: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-holden-dark mb-8">Análisis Predictivo de Churn</h1>
-        
+      <main className="flex-grow container mx-auto px-4 py-8 mt-20">
+
         {!results ? (
-          <UploadSection 
+          <UploadSection
             isLoading={isLoading}
             fileName={fileName}
             setFileName={setFileName}
@@ -86,8 +73,8 @@ const Analysis: React.FC = () => {
             setWasPreprocessed={setWasPreprocessed}
           />
         ) : (
-          <ResultsSection 
-            results={results} 
+          <ResultsSection
+            results={results}
             fileName={fileName}
             wasPreprocessed={wasPreprocessed}
             onReset={handleReset}
