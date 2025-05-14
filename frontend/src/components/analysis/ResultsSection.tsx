@@ -14,12 +14,17 @@ interface ResultsSectionProps {
   onReset: () => void;
 }
 
+
+
+
 const ResultsSection: React.FC<ResultsSectionProps> = ({
   results,
   fileName,
   wasPreprocessed,
   onReset,
 }) => {
+  console.log("Resultados que llegaron a ResultsSection:", results); 
+
   const {
     threshold,
     coste_total,
@@ -64,6 +69,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({
             tp,
             cost_fn,
             cost_fp,
+             totalCost: coste_total,
           }}
         />
 

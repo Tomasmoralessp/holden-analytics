@@ -24,29 +24,37 @@ const Analysis: React.FC = () => {
 
     setTimeout(() => {
       const demoResults = {
-        threshold: 0.5,
-        coste_total: 12580,
-        f1: 0.82,
-        recall: 0.79,
-        precision: 0.85,
-        top_customers_at_risk: [
-          { id: "C1024", risk_score: 0.95 },
-          { id: "C3819", risk_score: 0.92 },
-          { id: "C5523", risk_score: 0.88 },
-          { id: "C2210", risk_score: 0.85 },
-          { id: "C4421", risk_score: 0.82 }
-        ],
-        shap_summary: [
-          { feature: "Duración contrato", importance: 0.82, direction: -0.45 },
-          { feature: "Meses como cliente", importance: 0.76, direction: -0.32 },
-          { feature: "Gasto mensual", importance: 0.65, direction: 0.28 }
-        ],
-        classification_report: {
-          accuracy: 0.84,
-          "0": { precision: 0.88, recall: 0.92, f1_score: 0.90, support: 400 },
-          "1": { precision: 0.76, recall: 0.68, f1_score: 0.72, support: 150 }
-        }
-      };
+  threshold: 0.5,
+  coste_total: 12580,
+  totalCost: 12580, 
+  f1: 0.82,
+  recall: 0.79,
+  precision: 0.85,
+  fn: 45,
+  fp: 25,
+  tp: 105,
+  tn: 325,
+  cost_fn: 100,
+  cost_fp: 10,
+  top_customers_at_risk: [
+    { id: "C1024", risk_score: 0.95 },
+    { id: "C3819", risk_score: 0.92 },
+    { id: "C5523", risk_score: 0.88 },
+    { id: "C2210", risk_score: 0.85 },
+    { id: "C4421", risk_score: 0.82 }
+  ],
+  shap_summary: [
+    { feature: "Duración contrato", importance: 0.82, direction: -0.45 },
+    { feature: "Meses como cliente", importance: 0.76, direction: -0.32 },
+    { feature: "Gasto mensual", importance: 0.65, direction: 0.28 }
+  ],
+  classification_report: {
+    accuracy: 0.84,
+    "0": { precision: 0.88, recall: 0.92, f1_score: 0.90, support: 400 },
+    "1": { precision: 0.76, recall: 0.68, f1_score: 0.72, support: 150 }
+  }
+};
+
 
       setResults(demoResults);
       setWasPreprocessed(true);

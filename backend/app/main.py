@@ -7,7 +7,7 @@ app = FastAPI()
 
 origins = [
     "http://localhost:5173",   # Vite en desarrollo
-    # "https://tu‑dominio.com",  # añade aquí tu front de producción
+    # "https://tu‑dominio.com",  # añadirs front de producción
 ]
 
 app.add_middleware(
