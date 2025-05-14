@@ -29,3 +29,10 @@ class PredictionResponse(BaseModel):
     shap_summary: List[ShapFeature]
     top_customers_at_risk: List[RiskScore]
     classification_report: Dict[str, Union[ClassMetrics, float]]
+    retained_revenue: float
+    total_cost: float
+    net_gain: float
+    cost_per_customer: float
+    loss_from_fn: float
+    cost_from_fp: float
+    recommendation: str

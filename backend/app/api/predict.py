@@ -7,6 +7,8 @@ from app.model.threshold import optimize_threshold_by_cost
 from app.model.explain import get_shap_summary
 from app.model.metrics import get_classification_report, format_classification_report
 from app.schemas.report import PredictionResponse, RiskScore, ShapFeature, ClassMetrics
+from app.utils.economics import compute_economic_impact
+from app.utils.llm_client import ask_openrouter, build_prompt
 
 router = APIRouter()
 
@@ -38,6 +40,28 @@ async def predict(
     tp = int(((y_true == 1) & (y_pred == 1)).sum())
     tn = int(((y_true == 0) & (y_pred == 0)).sum())
 
+    impact = compute_economic_impact(
+        fn=fn,
+        fp=fp,
+        tp=tp,
+        cost_fn=cost_fn,
+        cost_fp=cost_fp
+    )
+
+    # ----------- IA: Generación de resumen y recomendación -----------
+
+    prompt = build_prompt({
+        "threshold": threshold,
+        "recall": recall,
+        "precision": precision,
+        "net_gain": impact["net_gain"],
+        "total_cost": impact["total_cost"],
+        "tp": tp,
+        "fn": fn
+    })
+
+    recommendation = ask_openrouter(prompt)
+
     shap_raw = get_shap_summary(model, X)
     shap_summary = [ShapFeature(**item) for item in shap_raw]
 
@@ -66,5 +90,8 @@ async def predict(
         tn=tn,
         shap_summary=shap_summary,
         top_customers_at_risk=top_customers_at_risk,
-        classification_report=formatted_report
-    )
+        classification_report=formatted_report,
+        recommendation=recommendation,
+        **impact
+)
+

@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import CustomButton from '@/components/ui/CustomButton';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 const Hero: React.FC = () => {
   const circleRef = useRef<SVGCircleElement>(null);
@@ -50,12 +51,16 @@ const Hero: React.FC = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 reveal-delay-4">
+                <Link to="/analysis">
                 <CustomButton size="lg" variant="primary" withArrow className="group">
                   Comenzar Ahora
                 </CustomButton>
+                </Link>
+                <Link to="/analysis">
                 <CustomButton size="lg" variant="outline">
                   Ver Demostración
                 </CustomButton>
+                </Link>
               </div>
               
               <div className="mt-10 flex items-center space-x-6 text-sm text-holden-gray reveal-delay-4">

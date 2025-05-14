@@ -7,6 +7,7 @@ app = FastAPI()
 
 origins = [
     "http://localhost:3000",   # Vite en desarrollo
+    "http://localhost:5173",   # Vite en desarrollo
     # "https://tu‑dominio.com",  # añadirs front de producción
 ]
 
