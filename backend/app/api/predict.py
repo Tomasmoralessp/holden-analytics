@@ -55,7 +55,7 @@ async def predict(
     df["risk_score"] = probs
 
     # Extraer top 10 clientes con todas sus features
-    top_customers_df = df.sort_values(by="risk_score", ascending=False).head(10)
+    top_customers_df = df.sort_values(by="risk_score", ascending=False).head(5)
 
     # Para el frontend: solo id y riesgo
     top_customers_at_risk = [
