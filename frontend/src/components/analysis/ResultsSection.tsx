@@ -5,6 +5,7 @@ import MetricsCard from "@/components/analysis/MetricsCard";
 import RiskTable from "@/components/analysis/RiskTable";
 import ShapChart from "@/components/analysis/ShapChart";
 import ClassificationTable from "@/components/analysis/ClassificationTable";
+import RecommendationCard from "@/components/analysis/RecommendationCard"
 import { AnalysisResult } from "@/types/analysis";
 
 interface ResultsSectionProps {
@@ -13,8 +14,6 @@ interface ResultsSectionProps {
   wasPreprocessed: boolean;
   onReset: () => void;
 }
-
-
 
 
 const ResultsSection: React.FC<ResultsSectionProps> = ({
@@ -39,6 +38,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({
     shap_summary,
     top_customers_at_risk,
     classification_report,
+    recommendation
   } = results;
 
   return (
@@ -78,7 +78,10 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({
         <RiskTable customers={top_customers_at_risk} />
 
         <ClassificationTable report={classification_report} />
-      </div>
+
+      
+        <RecommendationCard content={recommendation} />
+      </div> 
     </div>
   );
 };

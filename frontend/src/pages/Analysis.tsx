@@ -19,13 +19,16 @@ const Analysis: React.FC = () => {
   };
 
   const handleDemoData = async (options?: { cost_fn: number; cost_fp: number }) => {
-    setIsLoading(true);
-    setError(null);
+  setIsLoading(true);
+  setError(null);
 
-    const { cost_fn = 100, cost_fp = 10 } = options || {};
+  const { cost_fn = 100, cost_fp = 10 } = options || {};
 
+  setTimeout(() => {
     const demoResults: AnalysisResult = {
       threshold: 0.5,
+      coste_total: 12580,
+      totalCost: 12580,
       f1: 0.82,
       recall: 0.79,
       precision: 0.85,
@@ -35,6 +38,17 @@ const Analysis: React.FC = () => {
       tn: 325,
       cost_fn,
       cost_fp,
+      recommendation: `Impacto económico:
+La estrategia ha generado una ganancia neta estimada de 27.920 €, reteniendo 105 clientes con un coste total de 12.580 €.
+
+Patrones comunes:
+Los clientes en riesgo suelen tener contratos de corto plazo, gastos mensuales elevados y no cuentan con servicios adicionales como soporte técnico o seguridad.
+
+Estrategias:
+1. Ofrecer descuentos por permanencia a clientes de alto riesgo con contratos mensuales.
+2. Incluir soporte técnico gratuito durante 6 meses para fomentar fidelización.
+3. Implementar campañas proactivas por SMS con ofertas personalizadas según perfil de consumo.`,
+
       top_customers_at_risk: [
         { id: "C1024", risk_score: 0.95 },
         { id: "C3819", risk_score: 0.92 },
@@ -54,13 +68,14 @@ const Analysis: React.FC = () => {
       }
     };
 
-    setTimeout(() => {
-      setResults(demoResults);
-      setWasPreprocessed(true);
-      setFileName('datos_demo.csv');
-      setIsLoading(false);
-    }, 1000);
-  };
+    setResults(demoResults);
+    setWasPreprocessed(true);
+    setFileName("demo_datos.csv");
+    setIsLoading(false);
+  }, 1000);
+};
+
+
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -88,6 +103,7 @@ const Analysis: React.FC = () => {
         )}
       </main>
       <Footer />
+      
     </div>
   );
 };

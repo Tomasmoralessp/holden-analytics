@@ -16,6 +16,7 @@ import {
 import CustomButton from "@/components/ui/CustomButton";
 import { AnalysisResult } from "@/types/analysis";
 import { toast } from "sonner";
+import AnalysisSteps from "@/components/analysis/AnalysisSteps";
 
 interface UploadSectionProps {
   isLoading: boolean;
@@ -121,6 +122,10 @@ const UploadSection: React.FC<UploadSectionProps> = ({
           probabilidad de cancelación
         </CardDescription>
       </CardHeader>
+
+       <div className="px-6 pb-0 mt-2">
+        <AnalysisSteps />
+      </div>
 
       <CardContent className="space-y-6">
         <div

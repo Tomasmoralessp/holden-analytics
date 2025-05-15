@@ -9,6 +9,7 @@ from app.model.metrics import get_classification_report, format_classification_r
 from app.schemas.report import PredictionResponse, RiskScore, ShapFeature, ClassMetrics
 from app.utils.economics import compute_economic_impact
 from app.utils.llm_client import ask_openrouter, build_prompt
+from app.utils.llm_formatter import prepare_llm_payload
 
 router = APIRouter()
 
@@ -48,32 +49,45 @@ async def predict(
         cost_fp=cost_fp
     )
 
-    # ----------- IA: Generación de resumen y recomendación -----------
-
-    prompt = build_prompt({
-        "threshold": threshold,
-        "recall": recall,
-        "precision": precision,
-        "net_gain": impact["net_gain"],
-        "total_cost": impact["total_cost"],
-        "tp": tp,
-        "fn": fn
-    })
-
-    recommendation = ask_openrouter(prompt)
-
     shap_raw = get_shap_summary(model, X)
     shap_summary = [ShapFeature(**item) for item in shap_raw]
 
-    top_risks_df = pd.DataFrame({
-        "id": df.index,
-        "risk_score": probs
-    }).sort_values(by="risk_score", ascending=False).head(10)
+    df["risk_score"] = probs
 
+    # Extraer top 10 clientes con todas sus features
+    top_customers_df = df.sort_values(by="risk_score", ascending=False).head(10)
+
+    # Para el frontend: solo id y riesgo
     top_customers_at_risk = [
-        RiskScore(id=int(row["id"]), risk_score=float(row["risk_score"]))
-        for _, row in top_risks_df.iterrows()
-    ]
+    RiskScore(id=int(row.name), risk_score=float(row["risk_score"]))
+    for _, row in top_customers_df.iterrows()
+]
+
+
+    # ----------- IA: Generación de resumen y recomendación -----------
+
+    llm_data = prepare_llm_payload(
+    impact=impact,
+    threshold=threshold,
+    precision=precision,
+    recall=recall,
+    f1=f1,
+    tp=tp,
+    fp=fp,
+    fn=fn,
+    tn=tn,
+    shap_summary=shap_summary,
+    top_customers_df=top_customers_df
+    )
+
+    prompt = build_prompt(llm_data)
+
+    print("Prompt enviado al LLM:\n", prompt)
+
+
+    recommendation = ask_openrouter(prompt)
+
+    
 
     report_dict = get_classification_report(y_true, y_pred)
     formatted_report = format_classification_report(report_dict)

@@ -1,5 +1,6 @@
 import requests
 import os
+import json
 
 api_key = os.getenv("OPENROUTER_API_KEY") or "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"
 
@@ -26,18 +27,26 @@ def ask_openrouter(prompt: str, model="mistralai/mistral-7b-instruct", api_key: 
     return response.json()["choices"][0]["message"]["content"].strip()
 
 def build_prompt(metrics: dict) -> str:
+    # Serializar todo como JSON indentado
+    datos_json = json.dumps(metrics, indent=2)
+
+    # Prompt completo
     return f"""
-You are an expert business analyst assistant.
+Actúa como un experto en retención de clientes en telecomunicaciones.
 
-Given the following churn prediction results:
+Con los datos que recibirás, genera una recomendación en el siguiente formato EXACTO (no uses Markdown ni asteriscos):
 
-- Threshold: {metrics['threshold']:.2f}
-- Recall: {metrics['recall']:.1%}
-- Precision: {metrics['precision']:.1%}
-- Net Gain: {metrics['net_gain']:,.0f} €
-- Total Retention Cost: {metrics['total_cost']:,.0f} €
-- Customers Retained: {metrics['tp']}
-- Customers Lost: {metrics['fn']}
+Impacto económico:
+[1–2 frases sobre la ganancia, número de clientes retenidos y coste total]
 
-Write a 3–4 line business recommendation that includes a short summary and a strategic suggestion to maximize retention impact.
+Patrones comunes:
+[1–2 frases sobre las características comunes entre los clientes en riesgo]
+
+Estrategias:
+1. [Primera recomendación accionable]
+2. [Segunda recomendación accionable]
+3. [Tercera recomendación accionable]
+
+Evita cualquier encabezado adicional. Responde solo usando ese formato. Aquí tienes los datos:
+{datos_json}
 """
