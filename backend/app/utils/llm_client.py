@@ -2,7 +2,7 @@ import requests
 import os
 import json
 
-api_key = os.getenv("OPENROUTER_API_KEY") or "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"
+api_key = os.getenv("OPENROUTER_API_KEY") or "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"
 
 
 def ask_openrouter(prompt: str, model="deepseek/deepseek-prover-v2:free", api_key: str = api_key) -> str:
