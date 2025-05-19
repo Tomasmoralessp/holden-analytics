@@ -7,7 +7,7 @@ api_key = os.getenv("OPENROUTER_API_KEY") or "sk-or-v1-e2ffaa401760977d14ddb3fbb
 
 def ask_openrouter(prompt: str, model="deepseek/deepseek-prover-v2:free", api_key: str = api_key) -> str:
     if not api_key:
-        raise ValueError("API key is required for OpenRouter")
+        return "API key is missing"
 
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -22,22 +22,26 @@ def ask_openrouter(prompt: str, model="deepseek/deepseek-prover-v2:free", api_ke
         ]
     }
 
-    response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
-    response.raise_for_status()
+    try:
+        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
+        response.raise_for_status()
+        full_response = response.json()
+        print("LLM RESPONSE:", json.dumps(full_response, indent=2))
 
-    full_response = response.json()
-    print("LLM RESPONSE:", json.dumps(full_response, indent=2))
+        text = full_response["choices"][0]["message"]["content"].strip()
 
-    text = full_response["choices"][0]["message"]["content"].strip()
+        if text.startswith("```") and text.endswith("```"):
+            text = text.strip("`")
+            lines = text.splitlines()
+            if lines and lines[0].startswith("plaintext"):
+                lines = lines[1:]
+            text = "\n".join(lines).strip()
 
-    if text.startswith("```") and text.endswith("```"):
-        text = text.strip("`")
-        lines = text.splitlines()
-        if lines and lines[0].startswith("plaintext"):
-            lines = lines[1:]
-        text = "\n".join(lines).strip()
+        return text or "Empty response from the API"
 
-    return text
+    except Exception as e:
+        print("Error calling OpenRouter:", e)
+        return "Error with the API"
 
 def build_prompt(metrics: dict) -> str:
     datos_json = json.dumps(metrics, indent=2)
